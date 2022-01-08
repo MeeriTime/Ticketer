@@ -86,7 +86,7 @@ const command: Command = {
 
 			const preChannel = interaction.channel as GuildChannel;
 			const subject = interaction.options.getString('grund')!;
-			const name = `ticket-${interaction.user.username}`;
+			const name = `Ticket-${interaction.user.username}`;
 
 			// for text channel based ticketing
 			if (record.SupportCategory !== '0' && record.UseTextChannels) {

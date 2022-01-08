@@ -58,7 +58,7 @@ const command: Command = {
 					record.SupportChannel === '0')
 			) {
 				const managers = await interaction.guild!.roles.fetch(record.RoleID);
-				const name = `ticket-${interaction.user.username}`;
+				const name = `Ticket-${interaction.user.username}`;
 
 				if (
 					name !== interaction.channel.name &&

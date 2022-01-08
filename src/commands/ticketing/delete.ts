@@ -57,13 +57,17 @@ const command: Command = {
 			}
 
 			let isSupportTicket = false;
-			const authorId = interaction.channel.name.split('-').at(-1)!;
-			const hasAuthorInName = interaction.channel.isThread()
-				? interaction.channel.members.resolve(authorId)
-				: interaction.channel.members.has(authorId);
+			const authorName = interaction.channel.name.split('-').at(-1)!;
+			const hasAuthorInTicket = interaction.channel.isThread()
+				? interaction.channel.members.cache.find(
+						(member) => member.user?.username === authorName
+				  )
+				: interaction.channel.members.find(
+						(member) => member.user?.username === authorName
+				  );
 
 			// messy code but it works
-			if (hasAuthorInName) {
+			if (hasAuthorInTicket) {
 				if (record.UseTextChannels) {
 					if (interaction.channel.parentId === record.SupportCategory) {
 						isSupportTicket = true;
@@ -80,7 +84,11 @@ const command: Command = {
 			}
 
 			if (isSupportTicket) {
-				const managers = await interaction.guild!.roles.fetch(record.RoleID);
+				const firstMessage = interaction.channel.messages.cache.first();
+				const mentionInMessage = firstMessage?.mentions.roles.first();
+				const managers = await interaction.guild!.roles.fetch(
+					mentionInMessage!.id
+				);
 
 				if (!managers?.members.has(interaction.user.id)) {
 					return interaction.reply({
@@ -152,7 +160,9 @@ const command: Command = {
 
 					logsChannel.send({ embeds: [embed], files: [attachment] });
 
-					const user = interaction.guild!.members.resolve(authorId);
+					const user = (
+						await interaction.guild!.members.search({ query: authorName })
+					).first();
 
 					if (user && !managers.members.has(user.id)) {
 						embed.setDescription(
