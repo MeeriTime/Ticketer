@@ -27,7 +27,7 @@ const event: Event = {
 
 			if (!member) return;
 
-			if (name === `ticket-${ticketUserId}`) {
+			if (name === `ticket-${member.user?.username}`) {
 				if (
 					thread.members.cache.has(client.user!.id) &&
 					!thread.members.cache.has(ticketUserId)
