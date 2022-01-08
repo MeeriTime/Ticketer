@@ -5,6 +5,8 @@ import {
 	type NewsChannel,
 	type ThreadChannel,
 	TextChannel,
+	MessageActionRow,
+	MessageButton,
 	MessageEmbed,
 	type CommandInteraction,
 	type Role
@@ -13,23 +15,29 @@ import {
 	SlashCommandBuilder,
 	memberNicknameMention,
 	time,
-	channelMention
+	channelMention,
+	roleMention
 } from '@discordjs/builders';
 import { version } from '../../../package.json';
 import { conn } from '../../utils';
 import type { Command, Tables } from '../../types';
+import config from '../../otherTicketConfig';
 
 const command: Command = {
 	category: 'Ticketing',
 	data: new SlashCommandBuilder()
 		.setName('ticket')
 		.setDescription('Creates a support ticket')
-		.addStringOption((option) =>
-			option
-				.setName('subject')
-				.setDescription('The subject/message of the ticket')
-				.setRequired(true)
-		),
+		.addStringOption((option) => {
+			const choices = config.map((ticket) => ticket.ticketName);
+			const opt = option
+				.setName('grund')
+				.setDescription('Um was geht es in dem Ticket')
+				.setRequired(true);
+
+			choices.forEach((choice) => opt.addChoice(choice, choice));
+			return opt;
+		}),
 	execute: async ({ interaction }) => {
 		try {
 			if (!interaction.channel!.isText()) {
@@ -77,8 +85,8 @@ const command: Command = {
 			}
 
 			const preChannel = interaction.channel as GuildChannel;
-			const subject = interaction.options.getString('subject')!;
-			const name = `ticket-${interaction.user.id}`;
+			const subject = interaction.options.getString('grund')!;
+			const name = `ticket-${interaction.user.username}`;
 
 			// for text channel based ticketing
 			if (record.SupportCategory !== '0' && record.UseTextChannels) {
@@ -107,7 +115,8 @@ const command: Command = {
 					});
 				}
 
-				const managers = await interaction.guild!.roles.fetch(record.RoleID);
+				const role = config.find((conf) => conf.ticketName === subject)!;
+				const managers = await interaction.guild!.roles.fetch(role.roleId);
 
 				if (!managers) {
 					return interaction.reply({
@@ -187,7 +196,8 @@ const command: Command = {
 					});
 				}
 
-				const managers = await interaction.guild!.roles.fetch(record.RoleID);
+				const role = config.find((conf) => conf.ticketName === subject)!;
+				const managers = await interaction.guild!.roles.fetch(role.roleId);
 
 				if (!managers) {
 					return interaction.reply({
@@ -252,13 +262,19 @@ const handleRest = async (
 				interaction.user.id
 			)} created a new support ticket`
 		)
-		.addField('Subject', subject)
 		.addField(
 			'Available Managers',
 			presences?.length ? presences.join('\n') : 'Unknown'
 		)
 		.addField('Ticket Date', time(channel.createdAt, 'R'))
 		.setTimestamp();
+
+	const button = new MessageActionRow().addComponents(
+		new MessageButton()
+			.setCustomId(subject)
+			.setStyle('SECONDARY')
+			.setLabel(`Ticket ${subject}`)
+	);
 
 	if (record.LogsChannel !== '0') {
 		channelEmbed.setFooter({
@@ -268,7 +284,11 @@ const handleRest = async (
 		channelEmbed.setFooter({ text: `Version ${version}` });
 	}
 
-	const msg = await channel.send({ embeds: [channelEmbed] });
+	const msg = await channel.send({
+		content: roleMention(managers.id),
+		embeds: [channelEmbed],
+		components: [button]
+	});
 	await msg.pin();
 
 	if (channel.lastMessage?.system && channel.lastMessage.deletable) {
@@ -276,7 +296,6 @@ const handleRest = async (
 	}
 
 	if (channel.isThread()) {
-		managers.members.forEach((manager) => channel.members.add(manager.id));
 		channel.members.add(interaction.user.id);
 	}
 
