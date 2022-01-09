@@ -12,6 +12,7 @@ declare global {
 			ROLE_ID_3: string;
 			ROLE_ID_4: string;
 			ROLE_ID_5: string;
+			ROLE_ID_6: string;
 			DB_HOST: string;
 			DB_USER: string;
 			DB_PASSWORD: string;

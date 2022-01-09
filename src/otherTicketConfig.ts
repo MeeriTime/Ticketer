@@ -20,6 +20,10 @@ const config: OtherTicketConfig.OtherConfig = [
 	{
 		ticketName: 'Shop',
 		roleId: process.env.ROLE_ID_5
+	},
+	{
+		ticketName: 'Fraktion',
+		roleId: process.env.ROLE_ID_6
 	}
 ];
 
