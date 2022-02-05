@@ -8,12 +8,16 @@ const command: Command = {
 	data: new SlashCommandBuilder()
 		.setName('ticket')
 		.setDescription('Creates a support ticket')
-		.addStringOption((option) =>
-			option
-				.setName('subject')
-				.setDescription('The subject/message of the ticket')
-				.setRequired(true)
-		),
+		.addStringOption((option) => {
+			const choices = config.map((ticket) => ticket.ticketName);
+			const opt = option
+				.setName('grund')
+				.setDescription('Um was geht es in dem Ticket')
+				.setRequired(true);
+
+			choices.forEach((choice) => opt.addChoice(choice, choice));
+			return opt;
+		}),
 	execute: async ({ interaction }) => {
 		try {
 			if (!interaction.channel!.isText()) {

@@ -22,9 +22,6 @@ const command: Command = {
 				'SELECT * FROM TicketingManagers WHERE GuildID = ?',
 				[interaction.guildId]
 			);
-			const record = (rows as RowDataPacket[])[0] as
-				| Tables.TicketingManagers
-				| undefined;
 
 			handleTicketArchive(interaction, record);
 		} catch (err) {
