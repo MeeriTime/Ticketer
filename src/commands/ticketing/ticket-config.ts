@@ -7,7 +7,7 @@ import {
 	SlashCommandBuilder
 } from '@discordjs/builders';
 import { MessageEmbed, type Role } from 'discord.js';
-import { ChannelType } from 'discord-api-types';
+import { ChannelType } from 'discord-api-types/v9';
 import { version } from '../../../package.json';
 import { conn } from '../../utils';
 import type { Command, Tables } from '../../types';
@@ -41,7 +41,7 @@ const command: Command = {
 						.setName('channel')
 						.setDescription('The channel for creating tickets')
 						.setRequired(true)
-						.addChannelTypes([ChannelType.GuildText, ChannelType.GuildNews])
+						.addChannelType(ChannelType.GuildText)
 				)
 		)
 		.addSubcommand((subcommand) =>
@@ -55,7 +55,7 @@ const command: Command = {
 						.setName('channel')
 						.setDescription('The channel for posting logs')
 						.setRequired(true)
-						.addChannelTypes([ChannelType.GuildText, ChannelType.GuildNews])
+						.addChannelType(ChannelType.GuildText)
 				)
 		)
 		.addSubcommand((subcommand) =>

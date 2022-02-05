@@ -5,7 +5,7 @@ import {
 	inlineCode,
 	SlashCommandBuilder
 } from '@discordjs/builders';
-import { ChannelType } from 'discord-api-types';
+import { ChannelType } from 'discord-api-types/v9';
 import { version } from '../../../package.json';
 import { conn } from '../../utils';
 import type { Command, Tables } from '../../types';
@@ -28,7 +28,7 @@ const command: Command = {
 						.setName('channel')
 						.setDescription('The channel for the messages to be sent in')
 						.setRequired(true)
-						.addChannelTypes([ChannelType.GuildText, ChannelType.GuildNews])
+						.addChannelType(ChannelType.GuildText)
 				)
 		)
 		.addSubcommand((subcommand) =>
