@@ -29,7 +29,7 @@ export const handleTicketCreation = async (
 			initialSubject.length >= 1024
 				? `${initialSubject.substring(0, 1024 - 3)}...`
 				: initialSubject;
-		const name = `ticket-${interaction.user.id}`;
+		const name = `ticket-${interaction.user.username}`;
 
 		const supportChannelWithoutRecord = interaction.guild!.channels.cache.find(
 			(channel) =>

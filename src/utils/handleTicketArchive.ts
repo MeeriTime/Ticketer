@@ -43,7 +43,7 @@ export const handleTicketArchive = async (
 				record.SupportChannel === '0')
 		) {
 			const managers = await interaction.guild!.roles.fetch(record.RoleID);
-			const name = `ticket-${interaction.user.id}`;
+			const name = `ticket-${interaction.user.username}`;
 
 			if (
 				name !== interaction.channel.name &&

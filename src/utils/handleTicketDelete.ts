@@ -47,12 +47,14 @@ export const handleTicketDelete = async (
 		}
 
 		let isSupportTicket = false;
-		const authorId = interaction.channel.name.split('-').at(-1)!;
+		const authorName = interaction.channel.name.split('-').at(-1)!;
 		const hasAuthorInName = interaction.channel.isThread()
-			? await interaction.channel.members
-					.fetch(authorId, { force: true })
-					.catch(() => false)
-			: interaction.channel.members.has(authorId);
+			? interaction.channel.members.cache.find(
+					(member) => member.user?.username === authorName
+			  )
+			: interaction.channel.members.find(
+					(member) => member.user.username === authorName
+			  );
 
 		// messy code but it works
 		if (hasAuthorInName) {
@@ -144,15 +146,17 @@ export const handleTicketDelete = async (
 
 				logsChannel.send({ embeds: [embed], files: [attachment] });
 
-				const user = interaction.guild!.members.resolve(authorId);
+				const user = await interaction.guild!.members.search({
+					query: authorName
+				});
 
-				if (user && !managers.members.has(user.id)) {
+				if (user.first() && !managers.members.has(user.first()!.id)) {
 					embed.setDescription(
 						`${memberNicknameMention(
 							interaction.user.id
 						)} deleted your support ticket in ${interaction.guild!.name}`
 					);
-					user.send({ embeds: [embed], files: [attachment] });
+					user.first()!.send({ embeds: [embed], files: [attachment] });
 				}
 			}
 

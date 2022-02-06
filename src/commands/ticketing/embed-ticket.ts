@@ -9,6 +9,7 @@ import { inlineCode, SlashCommandBuilder } from '@discordjs/builders';
 import { ChannelType } from 'discord-api-types/v9';
 import { conn, handleTicketCreation } from '../../utils';
 import type { Command, Tables } from '../../types';
+import config from '../../otherTicketConfig';
 
 const command: Command = {
 	category: 'Ticketing',
@@ -73,7 +74,7 @@ const command: Command = {
 				.setTitle('Create Support Ticket')
 				.addField(
 					'Usage',
-					`Create a support ticket by either clicking the button below, or by using the command ${inlineCode(
+					`Create a support ticket by either clicking one of the buttons below, or by using the command ${inlineCode(
 						'/ticket'
 					)}`
 				)
@@ -84,12 +85,42 @@ const command: Command = {
 					.setCustomId(this.components!.customIds![0])
 					.setStyle('PRIMARY')
 					.setEmoji('🎟️')
-					.setLabel('Create Ticket')
+					.setLabel(this.components!.customIds![0]),
+				new MessageButton()
+					.setCustomId(this.components!.customIds![1])
+					.setStyle('SECONDARY')
+					.setEmoji('🎟️')
+					.setLabel(this.components!.customIds![1]),
+				new MessageButton()
+					.setCustomId(this.components!.customIds![2])
+					.setStyle('SUCCESS')
+					.setEmoji('🎟️')
+					.setLabel(this.components!.customIds![2])
+			);
+			const row2 = new MessageActionRow().addComponents(
+				new MessageButton()
+					.setCustomId(this.components!.customIds![3])
+					.setStyle('DANGER')
+					.setEmoji('🎟️')
+					.setLabel(this.components!.customIds![3]),
+				new MessageButton()
+					.setCustomId(this.components!.customIds![4])
+					.setStyle('PRIMARY')
+					.setEmoji('🎟️')
+					.setLabel(this.components!.customIds![4]),
+				new MessageButton()
+					.setCustomId(this.components!.customIds![5])
+					.setStyle('SECONDARY')
+					.setEmoji('🎟️')
+					.setLabel(this.components!.customIds![5])
 			);
 
 			// text channel based ticketing
 			if (record.SupportCategory !== '0' && record.UseTextChannels) {
-				const msg = await channel.send({ embeds: [embed], components: [row] });
+				const msg = await channel.send({
+					embeds: [embed],
+					components: [row, row2]
+				});
 				await msg.pin();
 
 				if (channel.lastMessage?.system && channel.lastMessage.deletable) {
@@ -114,7 +145,7 @@ const command: Command = {
 				if (supportChannelWithRecord || supportChannelWithoutRecord) {
 					const msg = await channel.send({
 						embeds: [embed],
-						components: [row]
+						components: [row, row2]
 					});
 					await msg.pin();
 
@@ -138,7 +169,14 @@ const command: Command = {
 		}
 	},
 	components: {
-		customIds: ['button_create_ticket'],
+		customIds: [
+			'Support',
+			'Bewerbung',
+			'Entwicklung',
+			'Spende',
+			'Shop',
+			'Fraktion'
+		],
 		execute: async ({ interaction }) => {
 			try {
 				const [rows] = await conn.execute(
@@ -156,7 +194,10 @@ const command: Command = {
 					});
 				}
 
-				const managers = await interaction.guild!.roles.fetch(record.RoleID);
+				const role = config.find(
+					(conf) => conf.ticketName === interaction.customId
+				)!;
+				const managers = await interaction.guild!.roles.fetch(role.roleId);
 
 				if (!managers) {
 					return interaction.reply({

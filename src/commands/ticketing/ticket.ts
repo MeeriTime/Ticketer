@@ -2,6 +2,7 @@ import type { RowDataPacket } from 'mysql2';
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { conn, handleTicketCreation } from '../../utils';
 import type { Command, Tables } from '../../types';
+import config from '../../otherTicketConfig';
 
 const command: Command = {
 	category: 'Ticketing',
@@ -9,13 +10,14 @@ const command: Command = {
 		.setName('ticket')
 		.setDescription('Creates a support ticket')
 		.addStringOption((option) => {
-			const choices = config.map((ticket) => ticket.ticketName);
 			const opt = option
 				.setName('grund')
 				.setDescription('Um was geht es in dem Ticket')
 				.setRequired(true);
 
+			const choices = config.map((ticket) => ticket.ticketName);
 			choices.forEach((choice) => opt.addChoice(choice, choice));
+
 			return opt;
 		}),
 	execute: async ({ interaction }) => {
@@ -41,15 +43,10 @@ const command: Command = {
 					ephemeral: true
 				});
 			}
-			if (record.RoleID === '0') {
-				return interaction.reply({
-					content: 'Missing the managers, please add them via ticket-config',
-					ephemeral: true
-				});
-			}
 
-			const subject = interaction.options.getString('subject')!;
-			const managers = await interaction.guild!.roles.fetch(record.RoleID);
+			const subject = interaction.options.getString('grund')!;
+			const role = config.find((conf) => conf.ticketName === subject)!;
+			const managers = await interaction.guild!.roles.fetch(role.roleId);
 
 			if (!managers) {
 				return interaction.reply({
